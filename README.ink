@@ -1,102 +1,187 @@
-VAR location = "Лес — начало"
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Ink + Локации и Картинки</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 15px;
+    max-width: 600px;
+  }
+  #location {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 8px;
+  }
+  #locationImage {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+  }
+  #storyText {
+    white-space: pre-wrap;
+    margin-bottom: 15px;
+  }
+  #choices button {
+    display: block;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
 
-=== start ===
-# Локация: {location}
+<div id="location">Локация: </div>
+<img id="locationImage" src="" alt="Локация" />
+<div id="storyText"></div>
+<div id="choices"></div>
 
-Вы просыпаетесь в лесу. Перед вами два пути.
+<!-- inkjs библиотека -->
+<script src="https://cdn.jsdelivr.net/npm/inkjs@1.12.1/ink.js"></script>
 
-+ [Идти налево] 
-    ~ location = "Лес — левая тропа"
-    -> путь_налево
-+ [Идти направо] 
-    ~ location = "Лес — правая тропа"
-    -> идти_дальше_
+<script>
+// Встроенный Ink JSON (получен из ink/script.ink с помощью inklecate)
+// Обратите внимание: для реального проекта лучше держать ink в отдельном JSON.
+// Здесь для простоты всё вместе.
+const storyContent = {
+    "inkVersion":20,
+    "root":[
+        ["^","VAR location = \"Лес — начало\"\n"],
+        ["^","=== start ===\n"],
+        ["^","# Локация: {location}\n"],
+        ["* ","Идти налево\n",["^","location = \"Лес — левая тропа\"\n",["->","путь_налево"]]],
+        ["* ","Идти направо\n",["^","location = \"Лес — правая тропа\"\n",["->","идти_дальше_"]]],
+        ["^","\n"],
+        ["== путь_налево ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["* ","Исследовать хижину\n",["^","location = \"Хижина\"\n",["->","хижина"]]],
+        ["* ","Оставить её и пройти дальше\n",["^","location = \"Лес — дальше по левой тропе\"\n",["->","идти_дальше_налево"]]],
+        ["^","\n"],
+        ["== хижина ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["* ","Осмотреться\n",["->","осмотр_хижины"]],
+        ["* ","Выйти обратно\n",["^","location = \"Лес — левая тропа\"\n",["->","идти_дальше_налево"]]],
+        ["^","\n"],
+        ["== осмотр_хижины ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["* ","Читать книгу\n",["->","загадка"]],
+        ["* ","Положить книгу обратно\n",["^","location = \"Лес — дальше по левой тропе\"\n",["->","идти_дальше_налево"]]],
+        ["^","\n"],
+        ["== загадка ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["^","В книге есть загадка: \"Что идет, не двигаясь?\"\n\n"],
+        ["* ","Время\n",["->","правильный_ответ"]],
+        ["* ","Тень\n",["->","неправильный_ответ"]],
+        ["* ","Вода\n",["->","неправильный_ответ"]],
+        ["^","\n"],
+        ["== правильный_ответ ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["^","Поздравляю! Вы решили загадку и получили магические силы.\n"],
+        ["->","END"],
+        ["== неправильный_ответ ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["^","К сожалению, это неправильный ответ. Ваше приключение закончилось.\n"],
+        ["->","END"],
+        ["== идти_дальше_налево ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["^","Вы проходите дальше и выходите из леса, добравшись до безопасного места.\n"],
+        ["->","END"],
+        ["== идти_дальше_ ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["^","Вы решили пройти дальше по пути направо и попадаете в открытое поле.\n"],
+        ["* ","Исследовать поле\n",["^","location = \"Поле\"\n",["->","поле"]]],
+        ["* ","Вернуться назад\n",["^","location = \"Лес — начало\"\n",["->","назад_к_началу"]]],
+        ["^","\n"],
+        ["== поле ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["^","На поле растут красивые цветы, и пчелы жужжат. Это конец вашей истории.\n"],
+        ["->","END"],
+        ["== назад_к_началу ==\n"],
+        ["^","# Локация: {location}\n"],
+        ["->","start"],
+        ["== END ==\n"],
+        ["-> DONE"],
+        ["==="]
+    ]
+};
 
-=== путь_налево ===
-# Локация: {location}
+window.onload = function () {
+  const story = new inkjs.Story(storyContent);
 
-Вы выбираете идти налево. Там вы видите старую хижину.
+  const locationDiv = document.getElementById('location');
+  const locationImage = document.getElementById('locationImage');
+  const storyTextDiv = document.getElementById('storyText');
+  const choicesDiv = document.getElementById('choices');
 
-+ [Исследовать хижину] 
-    ~ location = "Хижина"
-    -> хижина
-+ [Оставить её и пройти дальше] 
-    ~ location = "Лес — дальше по левой тропе"
-    -> идти_дальше_налево
+  // Картинки локаций (положите такие изображения рядом с index.html либо пропишите ваши пути)
+  // Для демонстрации используем ссылки на бесплатные картинки из интернета, чтобы это работало без файлов.
+  const imageMap = {
+    "Лес — начало": "https://i.imgur.com/Rgx4UwB.jpg",
+    "Лес — левая тропа": "https://i.imgur.com/LHnZ3tf.jpg",
+    "Хижина": "https://i.imgur.com/bN4DkDr.jpg",
+    "Лес — дальше по левой тропе": "https://i.imgur.com/Rgx4UwB.jpg",
+    "Лес — правая тропа": "https://i.imgur.com/85bCxuS.jpg",
+    "Поле": "https://i.imgur.com/R51XSwr.jpg"
+  };
 
-=== хижина ===
-# Локация: {location}
+  function continueStory() {
+    // Получаем весь следующий текст (до следующего выбора)
+    let text = '';
+    while (story.canContinue) {
+      text += story.Continue() + '\n';
+    }
+    storyTextDiv.textContent = text.trim();
 
-Вы заходите в хижину. Внутри темно и пахнет травами.
+    // Убираем старые кнопки выбора
+    choicesDiv.innerHTML = '';
 
-+ [Осмотреться] -> осмотр_хижины
-+ [Выйти обратно] 
-    ~ location = "Лес — левая тропа"
-    -> идти_дальше_налево
+    // Текущая локация
+    const location = story.variablesState['location'] || '';
 
-=== осмотр_хижины ===
-# Локация: {location}
+    // Обновляем локацию и картинку
+    locationDiv.textContent = "Локация: " + location;
 
-Вы находите старую книгу с загадками.
+    if (imageMap[location]) {
+      locationImage.src = imageMap[location];
+      locationImage.style.display = "block";
+      locationImage.alt = location;
+    } else {
+      locationImage.style.display = "none";
+    }
 
-+ [Читать книгу] -> загадка
-+ [Положить книгу обратно] 
-    ~ location = "Лес — дальше по левой тропе"
-    -> идти_дальше_налево
+    // Если история закончилась
+    if (story.currentChoices.length === 0) {
+      let restartBtn = document.createElement('button');
+      restartBtn.textContent = "Начать заново";
+      restartBtn.onclick = () => {
+        locationImage.style.display = "block";
+        story.ResetState();
+        continueStory();
+      };
+      choicesDiv.appendChild(restartBtn);
+    } else {
+      // Добавляем кнопки для текущих выборов
+      story.currentChoices.forEach((choice, i) => {
+        let button = document.createElement('button');
+        button.textContent = choice.text.trim();
+        button.onclick = () => {
+          story.ChooseChoiceIndex(i);
+          continueStory();
+        };
+        choicesDiv.appendChild(button);
+      });
+    }
+  }
 
-=== загадка ===
-# Локация: {location}
+  continueStory();
+};
+</script>
 
-В книге есть загадка: "Что идет, не двигаясь?"
-
-+ [Время] -> правильный_ответ
-+ [Тень] -> неправильный_ответ
-+ [Вода] -> неправильный_ответ
-
-=== правильный_ответ ===
-# Локация: {location}
-
-Поздравляю! Вы решили загадку и получили магические силы.
-
--> DONE
-
-=== неправильный_ответ ===
-# Локация: {location}
-
-К сожалению, это неправильный ответ. Ваше приключение закончилось.
-
--> DONE
-
-=== идти_дальше_налево ===
-# Локация: {location}
-
-Вы проходите дальше и выходите из леса, добравшись до безопасного места.
-
--> DONE
-
-=== идти_дальше_ ===
-# Локация: {location}
-
-Вы решили пройти дальше по пути направо и попадаете в открытое поле.
-
-+ [Исследовать поле] 
-    ~ location = "Поле"
-    -> поле
-+ [Вернуться назад] 
-    ~ location = "Лес — начало"
-    -> назад_к_началу
-
-=== поле ===
-# Локация: {location}
-
-На поле растут красивые цветы, и пчелы жужжат.  
-Это конец вашей истории.
-
--> DONE
-
-=== назад_к_началу ===
-# Локация: {location}
-
-Вы возвращаетесь к началу.
-
--> start
+</body>
+</html>
